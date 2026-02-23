@@ -1,4 +1,5 @@
 import torch
+import torch.nn.functional as F
 from gpt import AndersenGPT
 from train import (
     EMBED_DIM,
@@ -12,7 +13,9 @@ from train import (
 from transformers import AutoTokenizer
 
 
-def generate_text(model, tokenizer, prompt, max_gen_len=500, device="cpu"):
+def generate_text(
+    model, tokenizer, prompt, max_gen_len=500, device: torch.device | str = "cpu"
+):
     """
     Given a prompt string, generate a continuation using greedy decoding.
     The prompt is encoded using the pretrained tokenizer.
@@ -25,33 +28,40 @@ def generate_text(model, tokenizer, prompt, max_gen_len=500, device="cpu"):
         # Ensure we work with the last MAX_SEQ_LEN tokens if the sequence gets too long.
         # If the sequence is longer than MAX_SEQ_LEN, keep only the last MAX_SEQ_LEN tokens.
         # Check if input_ids is too long, if it is crop it
-        ...
+        input_ids = input_ids[:, -MAX_SEQ_LEN:]
 
         # Forward pass: get logits for all tokens in the sequence.
-        logits = ...
-        
+        logits = model(input_ids)
+
         # Get the logits for the last token only: shape [batch_size, vocab_size]
-        next_token_logits = ...
+        next_token_logits = logits[:, -1, :]
 
         # You will implement two strategies for generating the next token:
         strategy = "greedy"
         if strategy == "greedy":
             # Greedy: choose the token with highest probability.
-            next_token_id = ...
+            next_token_id = torch.argmax(next_token_logits, dim=-1, keepdim=True)
         elif strategy == "sampling":
             # Multinomial Sampling: Sample from the probability distribution.
             # The temperature parameter controls the randomness of the sampling.
             temperature = 0.8
-            probabilities = ... # softmax with temperature
-            next_token_id = ... # multinomial sampling
+            probabilities = F.softmax(
+                next_token_logits / temperature, dim=-1
+            )  # softmax with temperature
+            next_token_id = torch.multinomial(
+                probabilities, num_samples=1
+            )  # multinomial sampling
+        else:
+            raise ValueError(f"Unknown strategy: {strategy}")
 
         # Append predicted token to input_ids. Concatenate
-        input_ids = ...
+        input_ids = torch.cat([input_ids, next_token_id], dim=1)
 
         # Stop early if the model generates the EOS token.
         # Check if next_token_id == tokenizer.eos_token_id
         # If next_token is end of sentence token, it should stop
-        ...
+        if next_token_id.item() == tokenizer.eos_token_id:
+            break
         ################################################################################################
 
     # Decode the full sequence to text.
