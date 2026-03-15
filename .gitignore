@@ -12,3 +12,7 @@ wheels/
 *.pt
 
 checkpoints/
+
+.data/
+
+.DS_Store
