@@ -16,7 +16,7 @@ from ddpm import Diffusion
 from model import UNet
 
 SEED = 1
-DATASET_SIZE = 40000
+DATASET_SIZE = None
 
 def set_seed(seed=SEED):
     random.seed(seed)
@@ -53,10 +53,10 @@ def prepare_dataloader(batch_size):
     return dataloader
 
 def create_result_folders(experiment_name):
-    os.makedirs("models", exist_ok=True)
-    os.makedirs("results", exist_ok=True)
-    os.makedirs(os.path.join("models", experiment_name), exist_ok=True)
-    os.makedirs(os.path.join("results", experiment_name), exist_ok=True)
+    os.makedirs("ex4/models", exist_ok=True)
+    os.makedirs("ex4/results", exist_ok=True)
+    os.makedirs(os.path.join("ex4/models", experiment_name), exist_ok=True)
+    os.makedirs(os.path.join("ex4/results", experiment_name), exist_ok=True)
 
 def train(device='cpu', T=500, img_size=16, input_channels=3, channels=32, time_dim=256,
           batch_size=100, lr=1e-3, num_epochs=30, experiment_name="ddpm", show=False):
@@ -69,9 +69,9 @@ def train(device='cpu', T=500, img_size=16, input_channels=3, channels=32, time_
     diffusion = Diffusion(img_size=img_size, T=T, beta_start=1e-4, beta_end=0.02, device=device)
 
     optimizer = optim.AdamW(model.parameters(), lr=lr)
-    mse = ... # use MSE loss 
+    mse = torch.nn.MSELoss() # use MSE loss 
     
-    logger = SummaryWriter(os.path.join("runs", experiment_name))
+    logger = SummaryWriter(os.path.join("ex4/runs", experiment_name))
     l = len(dataloader)
 
     for epoch in range(1, num_epochs + 1):
@@ -83,9 +83,9 @@ def train(device='cpu', T=500, img_size=16, input_channels=3, channels=32, time_
 
             # TASK 4: implement the training loop
             t = diffusion.sample_timesteps(images.shape[0]).to(device) # line 3 from the Training algorithm
-            x_t, noise = ... # inject noise to the images (forward process), HINT: use q_sample
-            predicted_noise = ... # predict noise of x_t using the UNet
-            loss = ... # loss between noise and predicted noise
+            x_t, noise = diffusion.q_sample(images, t) # inject noise to the images (forward process), HINT: use q_sample
+            predicted_noise = model(x_t, t) # predict noise of x_t using the UNet
+            loss = mse(noise, predicted_noise) # loss between noise and predicted noise
 
             
             optimizer.zero_grad()
@@ -97,13 +97,13 @@ def train(device='cpu', T=500, img_size=16, input_channels=3, channels=32, time_
             logger.add_scalar("MSE", loss.item(), global_step=epoch * l + i)
 
         sampled_images = diffusion.p_sample_loop(model, batch_size=images.shape[0])
-        save_images(images=sampled_images, path=os.path.join("results", experiment_name, f"{epoch}.jpg"),
+        save_images(images=sampled_images, path=os.path.join("ex4/results", experiment_name, f"{epoch}.jpg"),
                     show=show, title=f'Epoch {epoch}')
-        torch.save(model.state_dict(), os.path.join("models", experiment_name, f"weights-{epoch}.pt"))
+        torch.save(model.state_dict(), os.path.join("ex4/models", experiment_name, f"weights-{epoch}.pt"))
 
 
 def main():
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')  
+    device = torch.device('mps' if torch.mps.is_available() else 'cpu')  
     print(f"Model will run on {device}")
     set_seed(seed=SEED)
     train(device=device)
