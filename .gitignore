@@ -16,3 +16,16 @@ checkpoints/
 .data/
 
 .DS_Store
+
+# project artifacts (generated or external) — keep folder structure via .gitkeep
+project/data/**
+project/outputs/**
+
+# un-ignore folders and .gitkeep files at any depth
+!project/data/
+!project/data/*/
+!project/data/*/*/
+!project/data/**/.gitkeep
+!project/outputs/
+!project/outputs/*/
+!project/outputs/**/.gitkeep
