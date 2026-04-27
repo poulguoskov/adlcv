@@ -16,3 +16,6 @@ checkpoints/
 .data/
 
 .DS_Store
+
+project/data/
+project/outputs/
