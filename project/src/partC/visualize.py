@@ -152,7 +152,7 @@ def plot_qualitative_gallery(
 
 
 if __name__ == "__main__":
-    results_path = CHECKPOINTS_DIR / "partC_results_smoke_test.json"
+    results_path = CHECKPOINTS_DIR / "partC_results_m1_full.json"  # was smoke_test
     if not results_path.exists():
         print(f"Results not found: {results_path}")
         print("Run src.partC.evaluate first.")
@@ -162,11 +162,11 @@ if __name__ == "__main__":
         results_data = json.load(f)
 
     metrics = results_data["metrics"]
-    title_suffix = " (smoke test)"
+    title_suffix = " (full model)"  # was " (smoke test)"
 
     plot_score_distribution_and_curves(
         metrics,
-        output_path=FIGURES_DIR / "partC_eval_smoke_test.png",
+        output_path=FIGURES_DIR / "partC_eval_m1_full.png",  # new filename
         title_suffix=title_suffix,
     )
 
@@ -178,7 +178,7 @@ if __name__ == "__main__":
         scorer,
         n_examples=8,
         title=f"In-distribution gallery{title_suffix}",
-        output_path=FIGURES_DIR / "partC_gallery_in_dist_smoke_test.png",
+        output_path=FIGURES_DIR / "partC_gallery_in_dist_m1_full.png",
     )
 
     plot_qualitative_gallery(
@@ -186,5 +186,5 @@ if __name__ == "__main__":
         scorer,
         n_examples=8,
         title=f"OOC gallery{title_suffix}",
-        output_path=FIGURES_DIR / "partC_gallery_ooc_smoke_test.png",
+        output_path=FIGURES_DIR / "partC_gallery_ooc_m1_full.png",
     )

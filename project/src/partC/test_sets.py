@@ -141,7 +141,7 @@ if __name__ == "__main__":
     with open(PREPROCESSED_DIR / "class_to_id.json") as f:
         all_classes = sorted(json.load(f).keys())
 
-    in_dist = build_in_distribution_set(df_test, n_samples=500, min_reward=-0.5, seed=0)
+    in_dist = build_in_distribution_set(df_test, n_samples=5000, min_reward=-0.5, seed=0)
     print(f"\nIn-distribution test set: {len(in_dist)} examples")
     print(f"  example: {in_dist[0]}")
 

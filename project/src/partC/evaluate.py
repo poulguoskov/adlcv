@@ -140,19 +140,19 @@ def evaluate(
 
 
 if __name__ == "__main__":
-    ckpt_path = CHECKPOINTS_DIR / "smoke_test_best.pt"
+    ckpt_path = CHECKPOINTS_DIR / "m1_full_best.pt"  # was smoke_test_best.pt
     if not ckpt_path.exists():
         print(f"Checkpoint not found: {ckpt_path}")
         raise SystemExit(1)
 
     in_dist_path = PREPROCESSED_DIR / "partC_test_sets" / "in_distribution.json"
     ooc_path = PREPROCESSED_DIR / "partC_test_sets" / "ooc_class_swap.json"
-    output_path = CHECKPOINTS_DIR / "partC_results_smoke_test.json"
+    output_path = CHECKPOINTS_DIR / "partC_results_m1_full.json"  # new filename
 
     evaluate(
         checkpoint_path=ckpt_path,
         in_dist_path=in_dist_path,
         ooc_path=ooc_path,
         output_path=output_path,
-        device="cpu",  # smoke test, CPU is fine
+        device="mps",
     )
